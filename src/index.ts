@@ -1,5 +1,9 @@
 import { PromisePool } from "./pool";
-import { PromiseFunction, SmartPromiseOptions } from "./types";
+import {
+  PromiseFunction,
+  SmartPromiseOptions,
+  ExtractPromiseType,
+} from "./types";
 
 /**
  * SmartPromise - A Promise extension with concurrency control
@@ -16,26 +20,30 @@ export class SmartPromise<T> {
 
   /**
    * Execute promises with concurrency control, similar to Promise.all
+   * Follows native Promise.all() typing pattern
    */
-  static async all<T>(
-    promises: (Promise<T> | PromiseFunction<T>)[],
+  static async all<T extends readonly unknown[] | []>(
+    values: T,
     options: SmartPromiseOptions = {}
-  ): Promise<T[]> {
-    const tasks = SmartPromise.createPooledTasks(promises, options);
-
-    return Promise.all(tasks);
+  ): Promise<{ -readonly [P in keyof T]: Awaited<ExtractPromiseType<T[P]>> }> {
+    const tasks = SmartPromise.createPooledTasks(values, options);
+    return Promise.all(tasks) as any;
   }
 
   /**
    * Execute promises with concurrency control, similar to Promise.allSettled
+   * Follows native Promise.allSettled() typing pattern
    */
-  static async allSettled<T>(
-    promises: (Promise<T> | PromiseFunction<T>)[],
+  static async allSettled<T extends readonly unknown[] | []>(
+    values: T,
     options: SmartPromiseOptions = {}
-  ): Promise<PromiseSettledResult<T>[]> {
-    const tasks = SmartPromise.createPooledTasks(promises, options);
-
-    return Promise.allSettled(tasks);
+  ): Promise<{
+    -readonly [P in keyof T]: PromiseSettledResult<
+      Awaited<ExtractPromiseType<T[P]>>
+    >;
+  }> {
+    const tasks = SmartPromise.createPooledTasks(values, options);
+    return Promise.allSettled(tasks) as any;
   }
 
   /**
@@ -87,14 +95,14 @@ export class SmartPromise<T> {
     return results;
   }
 
-  private static createPooledTasks<T>(
-    promises: (Promise<T> | PromiseFunction<T>)[],
+  private static createPooledTasks<T extends readonly unknown[] | []>(
+    values: T,
     options: SmartPromiseOptions = {}
-  ): Promise<T>[] {
+  ): Promise<unknown>[] {
     const concurrency = options.concurrency ?? SmartPromise.defaultConcurrency;
     const pool = new PromisePool(concurrency);
 
-    return promises.map((promiseOrFn) => {
+    return (values as any[]).map((promiseOrFn: any) => {
       const task =
         typeof promiseOrFn === "function" ? promiseOrFn : () => promiseOrFn;
       return pool.acquire(task);
