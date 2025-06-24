@@ -1,0 +1,33 @@
+{
+  "name": "smart-promise",
+  "version": "0.0.1",
+  "description": "Smart promise supports pool and concurrency limits",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --clean --watch",
+    "prepublishOnly": "yarn run build",
+    "test": "vitest run"
+  },
+  "repository": "https://github.com/tauqeernasir/smart-promise",
+  "author": "Tauqeer Nasir",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.0.4",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "promise",
+    "pool",
+    "concurrency",
+    "limit",
+    "smart-promise"
+  ]
+}
