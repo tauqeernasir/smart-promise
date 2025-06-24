@@ -5,9 +5,9 @@ A Promise extension with built-in concurrency control for JavaScript/TypeScript.
 ## Installation
 
 ```bash
-npm install smart-promise
+npm install @tnr/smart-promise
 # or
-yarn add smart-promise
+yarn add @tnr/smart-promise
 ```
 
 ## Features
@@ -22,7 +22,7 @@ yarn add smart-promise
 ## Quick Start
 
 ```typescript
-import SmartPromise from "smart-promise";
+import SmartPromise from "@tnr/smart-promise";
 
 // Limit concurrent database calls to 5
 const users = await SmartPromise.all(
