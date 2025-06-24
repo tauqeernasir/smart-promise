@@ -70,16 +70,17 @@ export class SmartPromise<T> {
 
   /**
    * Execute promises sequentially with optional delay between executions
+   * Follows the same typing pattern as all() for heterogeneous support
    */
-  static async sequential<T>(
-    promises: (Promise<T> | PromiseFunction<T>)[],
+  static async sequential<T extends readonly unknown[] | []>(
+    values: T,
     options: SmartPromiseOptions & { delay?: number } = {}
-  ): Promise<T[]> {
-    const results: T[] = [];
+  ): Promise<{ -readonly [P in keyof T]: Awaited<ExtractPromiseType<T[P]>> }> {
+    const results: any[] = [];
     const { delay = 0 } = options;
 
-    for (let i = 0; i < promises.length; i++) {
-      const promiseOrFn = promises[i];
+    for (let i = 0; i < values.length; i++) {
+      const promiseOrFn = (values as any[])[i];
       const task =
         typeof promiseOrFn === "function" ? promiseOrFn : () => promiseOrFn;
 
@@ -87,12 +88,12 @@ export class SmartPromise<T> {
       results.push(result);
 
       // Add delay between executions if specified
-      if (delay > 0 && i < promises.length - 1) {
+      if (delay > 0 && i < values.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    return results;
+    return results as any;
   }
 
   private static createPooledTasks<T extends readonly unknown[] | []>(
